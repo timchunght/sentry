@@ -7,6 +7,8 @@ sentry.utils.auth
 """
 from __future__ import absolute_import
 
+import time
+import math
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from django.core.urlresolvers import reverse
@@ -74,3 +76,9 @@ class EmailAuthBackend(ModelBackend):
                 except ValueError:
                     continue
         return None
+
+
+def bump_session_timestamp(request):
+    # Round up so that the truncation does not conflict with higher
+    # solution on the db data on password change
+    request.session['_auth_ts'] = int(math.ceil(time.time()))

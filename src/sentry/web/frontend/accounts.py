@@ -124,7 +124,7 @@ def settings(request):
         'first_name': request.user.first_name,
     })
     if form.is_valid():
-        form.save()
+        form.save(request=request)
         messages.add_message(request, messages.SUCCESS, 'Your settings were saved.')
         return HttpResponseRedirect(request.path)
 
