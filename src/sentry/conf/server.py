@@ -391,6 +391,7 @@ CELERY_IMPORTS = (
     'sentry.tasks.ping',
     'sentry.tasks.post_process',
     'sentry.tasks.process_buffer',
+    'sentry.tasks.shortids',
 )
 CELERY_QUEUES = [
     Queue('default', routing_key='default'),
