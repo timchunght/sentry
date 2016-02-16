@@ -116,6 +116,9 @@ const StreamGroup = React.createClass({
               <span className="error-level truncate">{data.level}</span>
               <span className="icon icon-soundoff"></span>
               <span className="icon icon-bookmark"></span>
+              {data.shortId
+                ? <span className="short-id">{data.shortId}</span>
+                : null}
               {data.title}
             </Link>
           </h3>
