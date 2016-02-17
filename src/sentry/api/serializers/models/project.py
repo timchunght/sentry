@@ -22,6 +22,7 @@ class ProjectSerializer(Serializer):
             'slug': obj.slug,
             'name': obj.name,
             'isPublic': obj.public,
+            'shortName': obj.short_name,
             'dateCreated': obj.date_added,
             'firstEvent': obj.first_event,
             'features': feature_list,
