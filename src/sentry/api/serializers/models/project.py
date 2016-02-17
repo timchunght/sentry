@@ -23,6 +23,9 @@ class ProjectSerializer(Serializer):
             'name': obj.name,
             'isPublic': obj.public,
             'shortName': obj.short_name,
+            # TODO(mitsuhiko): eventually remove this when we will treat
+            # all short names as reviewed.
+            'shortNameReviewed': bool(obj.get_option('sentry:reviewed-short_id')),
             'dateCreated': obj.date_added,
             'firstEvent': obj.first_event,
             'features': feature_list,
