@@ -10,6 +10,18 @@ import requiredAdminActions from '../requiredAdminActions';
 import OrganizationSelector from './organizationSelector';
 import {t} from '../../locale';
 
+
+function getFirstRequiredAdminAction(org) {
+  for (let key in requiredAdminActions) {
+    let action = requiredAdminActions[key];
+    if (action.requiresAction(org)) {
+      return action;
+    }
+  }
+  return null;
+}
+
+
 const Header = React.createClass({
   mixins: [OrganizationState],
 
@@ -24,24 +36,16 @@ const Header = React.createClass({
     }
 
     let org = this.getOrganization();
+    let requiredAction = getFirstRequiredAdminAction(org);
     let actionMessage = null;
 
-    if (org) {
-      let requiredActions = org.requiredAdminActions;
-      if (requiredActions.length > 0) {
-        if (this.getAccess().has('org:write')) {
-          let slugId = requiredActions[0].toLowerCase().replace(/_/g, '-');
-          let url = `/organizations/${org.slug}/actions/${slugId}/`;
-          actionMessage = (
-            <a href={url}>{t('Required Action:')}{' '}{
-              requiredAdminActions[requiredActions[0]].getActionLinkTitle()}</a>
-          );
-        } else {
-          actionMessage = (
-            <span>{t('There are pending actions for an administrator of this organization!')}</span>
-          );
-        }
-      }
+    if (org && requiredAction !== null) {
+      let slugId = requiredAction.ID.toLowerCase().replace(/_/g, '-');
+      let url = `/organizations/${org.slug}/actions/${slugId}/`;
+      actionMessage = (
+        <a href={url}>{t('Required Action:')}{' '}{
+          requiredAction.getActionLinkTitle()}</a>
+      );
     }
 
     // NOTE: this.props.orgId not guaranteed to be specified
