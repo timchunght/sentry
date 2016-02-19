@@ -9,7 +9,7 @@ from __future__ import absolute_import, print_function
 
 
 from sentry.options import register, FLAG_NOSTORE, FLAG_REQUIRED, FLAG_PRIORITIZE_DISK
-from sentry.utils.types import Dict
+from sentry.utils.types import Dict, String
 
 
 register('cache.backend', flags=FLAG_NOSTORE)
@@ -19,6 +19,7 @@ register('system.databases', type=Dict, flags=FLAG_NOSTORE)
 register('system.debug', default=False, flags=FLAG_NOSTORE)
 register('system.rate-limit', default=0, flags=FLAG_PRIORITIZE_DISK)
 register('system.secret-key', flags=FLAG_NOSTORE)
+register('system.admin-auth-password', type=String)
 register('redis.options', type=Dict, flags=FLAG_NOSTORE)
 
 # Absolute URL to the sentry root directory. Should not include a trailing slash.
