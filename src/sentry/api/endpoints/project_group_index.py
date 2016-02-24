@@ -167,6 +167,7 @@ class ProjectGroupIndexEndpoint(ProjectEndpoint):
                                      belong to.
         :auth: required
         """
+        stat = request.GET.get('stat')
         stats_period = request.GET.get('statsPeriod')
         if stats_period not in (None, '', '24h', '14d'):
             return Response({"detail": ERR_INVALID_STATS_PERIOD}, status=400)
@@ -191,6 +192,7 @@ class ProjectGroupIndexEndpoint(ProjectEndpoint):
                 matching_group = Group.objects.get(id=mapping.group_id)
                 return Response(serialize(
                     [matching_group], request.user, StreamGroupSerializer(
+                        stat=stat,
                         stats_period=stats_period
                     )
                 ))
@@ -206,6 +208,7 @@ class ProjectGroupIndexEndpoint(ProjectEndpoint):
 
         context = serialize(
             results, request.user, StreamGroupSerializer(
+                stat=stat,
                 stats_period=stats_period
             )
         )

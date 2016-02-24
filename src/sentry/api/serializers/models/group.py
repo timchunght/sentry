@@ -1,5 +1,7 @@
 from __future__ import absolute_import, print_function
 
+import functools
+
 from datetime import timedelta
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -142,37 +144,61 @@ class GroupSerializer(Serializer):
 
 
 class StreamGroupSerializer(GroupSerializer):
-    def __init__(self, stats_period=None):
+    STAT_CHOICES = {
+        'events': functools.partial(
+            tsdb.get_range,
+            tsdb.models.group,
+        ),
+        'users': functools.partial(
+            tsdb.get_distinct_counts_series,
+            tsdb.models.users_affected_by_group,
+        ),
+    }
+
+    STATS_PERIOD_CHOICES = {
+        '24h': (24, timedelta(hours=1)),
+        '14d': (14, timedelta(days=1)),
+    }
+
+    def __init__(self, stat=None, stats_period=None):
+        if stat is None:
+            stat = 'events'
+
+        self.stats_period_label = stats_period
+        if stats_period is not None:
+            stats_period = self.STATS_PERIOD_CHOICES[stats_period]
+
+        self.stat = self.STAT_CHOICES[stat]
         self.stats_period = stats_period
-        assert stats_period in (None, '24h', '14d')
 
     def get_attrs(self, item_list, user):
         attrs = super(StreamGroupSerializer, self).get_attrs(item_list, user)
 
-        # we need to compute stats at 1d (1h resolution), and 14d
         group_ids = [g.id for g in item_list]
-        if self.stats_period:
-            days = 14 if self.stats_period == '14d' else 1
+
+        if self.stats_period is not None:
+            count, interval = self.stats_period
             now = timezone.now()
-            stats = tsdb.rollup(tsdb.get_range(
-                model=tsdb.models.group,
+            stats = self.stat(
                 keys=group_ids,
                 end=now,
-                start=now - timedelta(days=days),
-            ), 3600 * days)
+                start=now - (interval * (count - 1)),
+                rollup=interval.total_seconds(),
+            )
 
             for item in item_list:
                 attrs[item].update({
                     'stats': stats[item.id],
                 })
+
         return attrs
 
     def serialize(self, obj, attrs, user):
         result = super(StreamGroupSerializer, self).serialize(obj, attrs, user)
 
-        if self.stats_period:
+        if self.stats_period is not None:
             result['stats'] = {
-                self.stats_period: attrs['stats'],
+                self.stats_period_label: attrs['stats'],
             }
 
         return result
